@@ -51,8 +51,12 @@ beforeAll(() => {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
-  const report = JSON.parse(out) as [{ files: { path: string }[] }];
-  packed = report[0].files.map(f => f.path.replace(/\\/g, '/'));
+  // Older npm prints an array of reports; newer npm keys the report by package name.
+  const parsed = JSON.parse(out) as
+    | { files: { path: string }[] }[]
+    | Record<string, { files: { path: string }[] }>;
+  const report = Array.isArray(parsed) ? parsed[0] : Object.values(parsed)[0];
+  packed = report.files.map(f => f.path.replace(/\\/g, '/'));
 }, 120_000);
 
 /**
